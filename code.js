@@ -1,19 +1,7 @@
 const inquirer = require('inquirer')
 const mysql = require('mysql')
 const cTable = require('console.table')
-
-const connection = mysql.createConnection({
-    host:'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'rootroot',
-    database: 'homework'
-})
-
-connection.connect((err) => {
-    if (err) throw err;
-    runSearch();
-})
+const db = require( './app/connection' )('homework','rootroot')
 
 const runSearch = async () => {
     const answer = await inquirer.prompt([
@@ -43,7 +31,7 @@ const runSearch = async () => {
             viewEmployees();
             break;
         case 'View All Employees By Department':
-            // viewingByDepartment()
+            viewingByDepartment()
             break;
         case 'View All Employees By Manager':
             break;
@@ -83,7 +71,7 @@ const runSearch = async () => {
 
 function viewEmployees(){
     const query = `SELECT e.id,e.first_name,e.last_name,r.title,d.department,r.salary,m.manager FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id LEFT JOIN manager AS m ON e.manager_id = m.id`
-    connection.query(query, (err, res) => {
+    db.query(query, (err, res) => {
         if (err) throw err;
         console.log(`\n`)
         console.table(res)
@@ -91,7 +79,7 @@ function viewEmployees(){
     })
 }
 function viewRoles(){
-    connection.query('SELECT * FROM role', (err, res) => {
+    db.query('SELECT * FROM role', (err, res) => {
         if (err) throw err;
         console.log(`\n`)
         console.table(res)
@@ -99,7 +87,7 @@ function viewRoles(){
     })
 }
 async function viewDepartments(){
-    connection.query('SELECT * FROM department', (err, res) => {
+    await db.query('SELECT * FROM department', (err, res) => {
         if (err) throw err;
         console.log(`\n`)
         console.table(res)
@@ -107,24 +95,29 @@ async function viewDepartments(){
     })
 }
 
-function viewingByDepartment(){
-    const arr = []
-    connection.query('SELECT department.department FROM department', async (err, res) => {
-        res.forEach(({department}) => {
-            arr.push(`${department}`)
-        })
-        const answer = await inquirer.prompt([
-            {
-                message: 'Which department would you like to view?',
-                type: 'list',
-                choices: arr,
-                name: 'department'
-            }
-        ])
-    })
-}
+// function viewingByDepartment(){
+//     const arr = []
+//     connection.query('SELECT department.department FROM department', async (err, res) => {
+//         res.forEach(({department}) => {
+//             arr.push(department)
+//         })
+//         const answer = await inquirer.prompt([
+//             {
+//                 message: 'Which department would you like to view?',
+//                 type: 'list',
+//                 choices: arr,
+//                 name: 'department'
+//             }
+//         ])
+//     })
+// }
 
 async function addEmployee(){
+    let arr = []
+    const data = await db.query('SELECT * FROM role')
+    data.forEach(({title,id}) => {
+            arr.push({name:title, value:id})
+        })
     const questions = await inquirer.prompt([
         {
             message: "What is the employee's first name?",
@@ -135,8 +128,10 @@ async function addEmployee(){
             name: 'lastName'
         },
         {
+            type: 'list',
             message: "What is the employee's role?",
-            name: 'role'
+            choices: arr,
+            name: 'role',
         },
         {
             message: "Who is the employee's manager?",
@@ -145,7 +140,8 @@ async function addEmployee(){
             name: 'manager'
         }
     ])
-    connection.query('INSERT INTO employee VALUES(?,?,?,?,?)', [0,questions.firstName,questions.lastName,questions.role,questions.manager])
+    console.log(questions.role)
+    await db.query('INSERT INTO employee VALUES(?,?,?,?,?)', [0,questions.firstName,questions.lastName,questions.role,questions.manager])
     viewEmployees();
 }
 
@@ -164,7 +160,7 @@ async function addRole(){
             name: 'id'
         }
     ])
-    connection.query('INSERT INTO role VALUES(?,?,?,?)', [0,answer.title,answer.salary,answer.id])
+    db.query('INSERT INTO role VALUES(?,?,?,?)', [0,answer.title,answer.salary,answer.id])
 }
 
 async function addDepartment(){
@@ -201,7 +197,7 @@ function removeRole(){
     const arr = []
     connection.query('SELECT title FROM role', async (err, res) => {
         res.forEach(({title}) => {
-            arr.push(`${title}`)
+            arr.push(title)
         })
         const answer = await inquirer.prompt([
             {
@@ -219,7 +215,7 @@ function removeDepartment(){
     const arr = []
     connection.query('SELECT name FROM department', async (err, res) => {
         res.forEach(({name}) => {
-            arr.push(`${name}`)
+            arr.push(name)
         })
         const answer = await inquirer.prompt([
             {
@@ -232,3 +228,5 @@ function removeDepartment(){
         connection.query(`DELETE FROM department WHERE name = '${answer.name}'`)
     })
 }
+
+runSearch()
