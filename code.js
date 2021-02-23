@@ -29,7 +29,10 @@ const runSearch = async () => {
                 'Update Employee Manager',
                 'View All Roles',
                 'Add Role',
-                'Remove Role'],
+                'Remove Role',
+                'View All Departments',
+                'Add Department',
+                'Remove Department'],
             name: 'action'
         }
     ])
@@ -39,6 +42,7 @@ const runSearch = async () => {
             viewEmployees();
             break;
         case 'View All Employees By Department':
+            employeeByDepartment()
             break;
         case 'View All Employees By Manager':
             break;
@@ -52,10 +56,20 @@ const runSearch = async () => {
         case 'Update Employee Manager':
             break;
         case 'View All Roles':
+            viewRoles()
             break;
         case 'Add Role':
+            addRole()
             break;
         case 'Remove Role':
+            break;
+        case 'View All Departments':
+            viewDepartments()
+            break;
+        case 'Add Department':
+            addDepartment()
+            break;
+        case 'Remove Department':
             break;
         default:
             console.log(`Invalid action: ${answer.action}`);
@@ -63,7 +77,7 @@ const runSearch = async () => {
     }
 }
 
-const viewEmployees = () => {
+function viewEmployees(){
     connection.query('SELECT * FROM employee', (err, res) => {
         if (err) throw err;
         res.forEach(({id,first_name,last_name,role_id,manager_id}) => {
@@ -71,8 +85,24 @@ const viewEmployees = () => {
         })
     })
 }
+function viewRoles(){
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        res.forEach(({id,title,salary,department_id}) => {
+            console.log(`${id} | ${title} | ${salary} | ${department_id}`)
+        })
+    })
+}
+function viewDepartments(){
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        res.forEach(({id,name}) => {
+            console.log(`${id} | ${name}`)
+        })
+    })
+}
 
-const addEmployee = async () => {
+async function addEmployee(){
     const questions = await inquirer.prompt([
         {
             message: "What is the employee's first name?",
@@ -95,4 +125,49 @@ const addEmployee = async () => {
     ])
     connection.query('INSERT INTO employee VALUES(?,?,?,?,?)', [0,questions.firstName,questions.lastName,questions.role,questions.manager])
     viewEmployees();
+}
+
+async function addRole(){
+    const answer = await inquirer.prompt([
+        {
+            message: 'What is the title of the role?',
+            name: 'title'
+        },
+        {
+            message: 'What is the salary of the role?',
+            name: 'salary'
+        },
+        {
+            message: 'What is the department id?',
+            name: 'id'
+        }
+    ])
+    connection.query('INSERT INTO role VALUES(?,?,?,?)', [0,answer.title,answer.salary,answer.id])
+}
+
+async function addDepartment(){
+    const answer = await inquirer.prompt([
+        {
+            message: 'What is the name of the department?',
+            name: 'name'
+        }
+    ])
+    connection.query('INSERT INTO department VALUES(?,?)',[0,answer.name])
+}
+
+function employeeByDepartment(){
+    const arr = []
+    connection.query('SELECT first_name,last_name FROM employee', async (err, res) => {
+        res.forEach(({first_name,last_name}) => {
+            arr.push(`${first_name} ${last_name}`)
+        })
+        const answer = await inquirer.prompt([
+            {
+                message: 'Which employee?',
+                type: 'list',
+                choices: arr,
+                name: 'name'
+            }
+        ])
+    })
 }
