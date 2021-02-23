@@ -43,6 +43,7 @@ const runSearch = async () => {
             viewEmployees();
             break;
         case 'View All Employees By Department':
+            // viewingByDepartment()
             break;
         case 'View All Employees By Manager':
             break;
@@ -84,41 +85,42 @@ function viewEmployees(){
     const query = `SELECT e.id,e.first_name,e.last_name,r.title,d.department,r.salary,m.manager FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id LEFT JOIN manager AS m ON e.manager_id = m.id`
     connection.query(query, (err, res) => {
         if (err) throw err;
+        console.log(`\n`)
         console.table(res)
+        runSearch()
     })
 }
 function viewRoles(){
     connection.query('SELECT * FROM role', (err, res) => {
         if (err) throw err;
-        res.forEach(({id,title,salary,department_id}) => {
-            console.log(`${id} | ${title} | ${salary} | ${department_id}`)
-        })
+        console.log(`\n`)
+        console.table(res)
+        runSearch()
     })
 }
-function viewDepartments(){
+async function viewDepartments(){
     connection.query('SELECT * FROM department', (err, res) => {
         if (err) throw err;
-        res.forEach(({id,name}) => {
-            console.log(`${id} | ${name}`)
-        })
+        console.log(`\n`)
+        console.table(res)
+        runSearch()
     })
 }
 
 function viewingByDepartment(){
     const arr = []
-    connection.query('SELECT department.name FROM department', async (err, res) => {
-        res.forEach(({name}) => {
-            arr.push(`${name}`)
+    connection.query('SELECT department.department FROM department', async (err, res) => {
+        res.forEach(({department}) => {
+            arr.push(`${department}`)
         })
         const answer = await inquirer.prompt([
             {
                 message: 'Which department would you like to view?',
                 type: 'list',
                 choices: arr,
-                name: 'name'
+                name: 'department'
             }
         ])
-        connection.query(`SELECT e.first_name,e.last_name WHERE first_name = '${b[0]}' AND last_name = '${b[1]}'`)
     })
 }
 
