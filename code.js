@@ -295,9 +295,9 @@ async function addManager(){
 
 async function removeEmployee(){
     const arr = []
-    const data = await db.query('SELECT first_name,last_name FROM employee')
-        data.map(({first_name,last_name}) => {
-            arr.push(`${first_name} ${last_name}`)})
+    const data = await db.query('SELECT * FROM employee')
+        data.map(({first_name,last_name,id}) => {
+            arr.push({name:`${first_name} ${last_name}`,value:id})})
 
     if (arr.length == 0){
         console.log(`\n\n[ERR] list of employees required!\n\n`)
@@ -308,12 +308,10 @@ async function removeEmployee(){
                 message: 'Which employee would you like to remove?',
                 type: 'list',
                 choices: arr,
-                name: 'name'
+                name: 'id'
             }
         ])
-        let a = answer.name
-        let b = a.split(" ")
-        await db.query(`DELETE FROM employee WHERE first_name = '${b[0]}' AND last_name = '${b[1]}'`)
+        await db.query(`DELETE FROM employee WHERE id = ${answer.id}`)
         viewEmployees()
     }
 }
@@ -478,7 +476,8 @@ async function utilizedBudget(){
                 name: 'id'
             }
         ])
-        const d = await db.query(`SELECT role.salary FROM role INNER JOIN employee ON role_id = role.id INNER JOIN department ON role.department_id = ${answer.id}`)
+        const d = await db.query(`SELECT e.first_name,e.last_name,r.salary FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id WHERE d.id = ${answer.id}`)
+        console.log(d)
         if (d.length == 0){
             console.log(`\n\n[ERR] Requires an assigned list of roles and their salaries!\n\n`)
             runSearch()

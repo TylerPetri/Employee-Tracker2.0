@@ -23,7 +23,7 @@ To download, click the green "code" button in the top right, and copy paste that
 
 $git clone link
 
-![clone](assets/Installation.PNG)
+![clone](images/gitclone.PNG)
 
 Once you've opened your folder, `npm init` to that folder
 
