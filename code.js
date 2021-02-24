@@ -24,7 +24,8 @@ async function runSearch(){
                 'Remove Role',
                 'View All Departments',
                 'Add Department',
-                'Remove Department'],
+                'Remove Department',
+                'Total Utilized Budget Of A Department'],
             name: 'action'
         }
     ])
@@ -78,6 +79,9 @@ async function runSearch(){
         case 'Remove Department':
             removeDepartment()
             break;
+        case 'Total Utilized Budget Of A Department':
+            utilizedBudget()
+            break;
         default:
             console.log(`Invalid action: ${answer.action}`);
             break;
@@ -89,7 +93,7 @@ viewEmployees()
 async function viewEmployees(){
     const d = await db.query(`SELECT e.id,e.first_name,e.last_name,r.title,d.department,r.salary,m.manager FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id LEFT JOIN manager AS m ON e.manager_id = m.id`)
         if (d.length == 0){
-            console.log(`\nThe list of employees is empty\n`)
+            console.log(`\n\nThe list of employees is empty\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -100,7 +104,7 @@ async function viewEmployees(){
 async function viewRoles(){
     const d = await db.query('SELECT * FROM role')
         if (d.length == 0){
-            console.log(`\nThe list of roles is empty\n`)
+            console.log(`\n\nThe list of roles is empty\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -111,7 +115,7 @@ async function viewRoles(){
 async function viewDepartments(){
     const d = await db.query('SELECT * FROM department')
         if (d.length == 0){
-            console.log(`\nThe list of departments is empty\n`)
+            console.log(`\n\nThe list of departments is empty\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -123,7 +127,7 @@ async function viewDepartments(){
 async function viewManagers(){
     const d = await db.query('SELECT * FROM manager')
         if (d.length == 0){
-            console.log(`\nThe list of managers is empty\n`)
+            console.log(`\n\nThe list of managers is empty\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -139,7 +143,7 @@ async function viewingByDepartment(){
             arr.push({name: department, value: id})
         })
         if(arr.length == 0){
-            console.log(`\n[ERR]Empty department list!\n`)
+            console.log(`\n\n[ERR]Empty department list!\n\n`)
             runSearch()
         } else {
         const answer = await inquirer.prompt([
@@ -152,7 +156,7 @@ async function viewingByDepartment(){
         ])
         const d = await db.query(`SELECT e.first_name,e.last_name FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id WHERE d.id = ${answer.department}`)
         if (d.length == 0){
-            console.log(`\nNo employees in this department\n`)
+            console.log(`\n\nNo employees in this department\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -169,7 +173,7 @@ async function viewingByManager(){
             arr.push({name:manager,value:id})
         })
         if (arr.length == 0){
-            console.log(`\n[ERR] empty manager list!\n`)
+            console.log(`\n\n[ERR] empty manager list!\n\n`)
             runSearch()
         } else {
         const answer = await inquirer.prompt([
@@ -182,7 +186,7 @@ async function viewingByManager(){
         ])
         const d = await db.query(`SELECT e.first_name,e.last_name FROM employee AS e WHERE e.manager_id = ${answer.manager}`)
         if (d.length == 0){
-            console.log(`\nNo employees assigned to this manager\n`)
+            console.log(`\n\nNo employees assigned to this manager\n\n`)
             runSearch()
         } else {
             console.log(`\n`)
@@ -203,10 +207,10 @@ async function addEmployee(){
             a.push({name:manager, value:id})})
 
     if (arr.length == 0){
-        console.log(`\n[ERR] list of roles required!\n`)
+        console.log(`\n\n[ERR] list of roles required!\n\n`)
         runSearch()
     } else if (a.length == 0){
-        console.log(`\n[ERR] list of managers required!\n`)
+        console.log(`\n\n[ERR] list of managers required!\n\n`)
         runSearch()
     } else {
         const questions = await inquirer.prompt([
@@ -243,7 +247,7 @@ async function addRole(){
             arr.push({name:department, value:id}))
 
     if(arr.length == 0){
-        console.log(`\n[ERR] list of departments required!\n`)
+        console.log(`\n\n[ERR] list of departments required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -296,7 +300,7 @@ async function removeEmployee(){
             arr.push(`${first_name} ${last_name}`)})
 
     if (arr.length == 0){
-        console.log(`\n[ERR] list of employees required!\n`)
+        console.log(`\n\n[ERR] list of employees required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -325,10 +329,10 @@ async function updateRole(){
             a.push({name:title,value:id})}) 
 
     if(arr.length == 0){
-        console.log(`\n[ERR] list of employees required!\n`)
+        console.log(`\n\n[ERR] list of employees required!\n\n`)
         runSearch()
     } else if(a.length == 0) {
-        console.log(`\n[ERR] list of roles required!\n`)
+        console.log(`\n\n[ERR] list of roles required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -361,10 +365,10 @@ async function updateManager(){
             a.push({name:manager,value:id})})   
 
     if(arr.length==0){
-        console.log(`\n[ERR] list of employees required!\n`)
+        console.log(`\n\n[ERR] list of employees required!\n\n`)
         runSearch();
     } else if (a.length == 0){
-        console.log(`\n[ERR] list of managers required!\n`)
+        console.log(`\n\n[ERR] list of managers required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -393,7 +397,7 @@ async function removeManager(){
             arr.push({name:manager,value:id})})
 
     if(arr.length == 0){
-        console.log(`\n[ERR] list of managers required!\n`)
+        console.log(`\n\n[ERR] list of managers required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -416,7 +420,7 @@ async function removeRole(){
             arr.push({name:title,value:id})})
 
     if (arr.length == 0){
-        console.log(`\n[ERR] list of roles required!\n`)
+        console.log(`\n\n[ERR] list of roles required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -439,7 +443,7 @@ async function removeDepartment(){
             arr.push({name:department,value:id})})
     
     if (arr.length == 0){
-        console.log(`\n[ERR] list of departments required!\n`)
+        console.log(`\n\n[ERR] list of departments required!\n\n`)
         runSearch()
     } else {
         const answer = await inquirer.prompt([
@@ -453,5 +457,37 @@ async function removeDepartment(){
         await db.query(`DELETE FROM department WHERE id = '${answer.id}'`)
         await db.query(`DELETE FROM role WHERE department_id = '${answer.id}'`)
         viewEmployees();
+    }
+}
+
+async function utilizedBudget(){
+    const arr = []
+    const data = await db.query('SELECT * FROM department')
+        data.map(({department,id}) => {
+            arr.push({name:department, value:id})})
+
+    if (arr.length == 0){
+        console.log(`\n\n[ERR] list of departments required!\n\n`)
+        runSearch()
+    } else {
+        const answer = await inquirer.prompt([
+            {
+                message: 'Which department would you like to visit?',
+                type: 'list',
+                choices: arr,
+                name: 'id'
+            }
+        ])
+        const d = await db.query(`SELECT role.salary FROM role WHERE role.department_id = ${answer.id}`)
+        if (d.length == 0){
+            console.log(`\n\n[ERR] Requires an assigned list of roles and their salaries!\n\n`)
+            runSearch()
+        } else {
+            let e = []
+            d.forEach(({salary}) => e.push(salary))
+            e = e.reduce((a,b)=>a+b)
+            console.log(`\n\nUtilized budget of: ${e}\n\n`)
+            runSearch();
+        }
     }
 }
