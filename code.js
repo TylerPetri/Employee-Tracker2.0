@@ -3,7 +3,7 @@ const mysql = require('mysql')
 const cTable = require('console.table')
 const db = require( './app/connection' )('homework','rootroot')
 
-const runSearch = async () => {
+async function runSearch(){
     const answer = await inquirer.prompt([
         {
             type: 'list',
@@ -16,6 +16,9 @@ const runSearch = async () => {
                 'Remove Employee',
                 'Update Employee Role',
                 'Update Employee Manager',
+                'View All Managers',
+                'Add Manager',
+                'Remove Manager',
                 'View All Roles',
                 'Add Role',
                 'Remove Role',
@@ -34,6 +37,7 @@ const runSearch = async () => {
             viewingByDepartment()
             break;
         case 'View All Employees By Manager':
+            viewingByManager()
             break;
         case 'Add Employee':
             addEmployee()
@@ -42,8 +46,19 @@ const runSearch = async () => {
             removeEmployee()
             break;
         case 'Update Employee Role':
+            updateRole()
             break;
         case 'Update Employee Manager':
+            updateManager()
+            break;
+        case 'View All Managers':
+            viewManagers();
+            break;
+        case 'Add Manager':
+            addManager()
+            break;
+        case 'Remove Manager':
+            removeManager()
             break;
         case 'View All Roles':
             viewRoles()
@@ -95,29 +110,69 @@ async function viewDepartments(){
     })
 }
 
-// function viewingByDepartment(){
-//     const arr = []
-//     connection.query('SELECT department.department FROM department', async (err, res) => {
-//         res.forEach(({department}) => {
-//             arr.push(department)
-//         })
-//         const answer = await inquirer.prompt([
-//             {
-//                 message: 'Which department would you like to view?',
-//                 type: 'list',
-//                 choices: arr,
-//                 name: 'department'
-//             }
-//         ])
-//     })
-// }
+async function viewManagers(){
+    await db.query('SELECT * FROM manager', (err, res) => {
+        if (err) throw err;
+        console.log(`\n`)
+        console.table(res)
+        runSearch();
+    })
+}
+
+async function viewingByDepartment(){
+    const arr = []
+    const data = await db.query('SELECT * FROM department')
+        data.map(({department, id}) => {
+            arr.push({name: department, value: id})
+        })
+        if(arr == []){
+            console.log(`Empty list`)
+            runSearch()
+        } else {
+        const answer = await inquirer.prompt([
+            {
+                message: 'Which department would you like to view?',
+                type: 'list',
+                choices: arr,
+                name: 'department'
+            }
+        ])
+        const d = await db.query(`SELECT e.first_name,e.last_name FROM employee AS e LEFT JOIN role AS r ON e.role_id = r.id LEFT JOIN department AS d ON r.department_id = d.id WHERE d.id = ${answer.department}`)
+        console.table(d)
+        runSearch();
+    }
+}
+
+async function viewingByManager(){
+    const arr = []
+    const data = await db.query('SELECT * FROM manager')
+        data.map(({manager,id}) => {
+            arr.push({name:manager,value:id})
+        })
+        const answer = await inquirer.prompt([
+            {
+                message: 'Which manager list would you like to view?',
+                type: 'list',
+                choices: arr,
+                name: 'manager'
+            }
+        ])
+        const d = await db.query(`SELECT e.first_name,e.last_name FROM employee AS e WHERE e.manager_id = ${answer.manager}`)
+        console.table(d)
+        runSearch();
+}
 
 async function addEmployee(){
     let arr = []
+    let a = []
     const data = await db.query('SELECT * FROM role')
-    data.forEach(({title,id}) => {
+    data.map(({title,id}) => {
             arr.push({name:title, value:id})
         })
+    const d = await db.query('SELECT * FROM manager')
+    d.map(({manager,id}) => {
+            a.push({name:manager, value:id})
+    })
     const questions = await inquirer.prompt([
         {
             message: "What is the employee's first name?",
@@ -136,16 +191,20 @@ async function addEmployee(){
         {
             message: "Who is the employee's manager?",
             type: 'list',
-            choices: ['1'],
+            choices: a,
             name: 'manager'
         }
     ])
-    console.log(questions.role)
     await db.query('INSERT INTO employee VALUES(?,?,?,?,?)', [0,questions.firstName,questions.lastName,questions.role,questions.manager])
     viewEmployees();
+    runSearch();
 }
 
 async function addRole(){
+    const arr = []
+    const data = await db.query('SELECT * FROM department')
+        data.map(({department, id}) =>
+            arr.push({name:department, value:id}))
     const answer = await inquirer.prompt([
         {
             message: 'What is the title of the role?',
@@ -156,11 +215,14 @@ async function addRole(){
             name: 'salary'
         },
         {
-            message: 'What is the department id?',
+            message: 'This role is assigned to which department?',
+            type: 'list',
+            choices: arr,
             name: 'id'
         }
     ])
-    db.query('INSERT INTO role VALUES(?,?,?,?)', [0,answer.title,answer.salary,answer.id])
+    await db.query('INSERT INTO role VALUES(?,?,?,?)', [0,answer.title,answer.salary,answer.id])
+    runSearch();
 }
 
 async function addDepartment(){
@@ -170,13 +232,25 @@ async function addDepartment(){
             name: 'name'
         }
     ])
-    connection.query('INSERT INTO department VALUES(?,?)',[0,answer.name])
+    await db.query('INSERT INTO department VALUES(?,?)',[0,answer.name])
+    runSearch();
 }
 
-function removeEmployee(){
+async function addManager(){
+    const answer = await inquirer.prompt([
+        {
+            message: "What is the full name of the manager?",
+            name: 'name'
+        }
+    ])
+    await db.query('INSERT INTO manager VALUES(?,?)',[0,answer.name])
+    runSearch();
+}
+
+async function removeEmployee(){
     const arr = []
-    connection.query('SELECT first_name,last_name FROM employee', async (err, res) => {
-        res.forEach(({first_name,last_name}) => {
+    const data = await db.query('SELECT first_name,last_name FROM employee')
+        data.map(({first_name,last_name}) => {
             arr.push(`${first_name} ${last_name}`)
         })
         const answer = await inquirer.prompt([
@@ -189,44 +263,121 @@ function removeEmployee(){
         ])
         let a = answer.name
         let b = a.split(" ")
-        connection.query(`DELETE FROM employee WHERE first_name = '${b[0]}' AND last_name = '${b[1]}'`)
-    })
+        await db.query(`DELETE FROM employee WHERE first_name = '${b[0]}' AND last_name = '${b[1]}'`)
 }
 
-function removeRole(){
+async function updateRole(){
     const arr = []
-    connection.query('SELECT title FROM role', async (err, res) => {
-        res.forEach(({title}) => {
-            arr.push(title)
+    const data = await db.query('SELECT * FROM employee')
+        data.map(({first_name,last_name,id}) =>
+            arr.push({name:`${first_name} ${last_name}`, value:id}))
+    const a = []
+    const d = await db.query('SELECT * FROM role')
+        d.map(({title, id}) => {
+            a.push({name:title,value:id})
+        }) 
+
+        if(a.length == 0){runSearch()} else {
+            const answer = await inquirer.prompt([
+                {
+                    message: 'Which employee would you like to update?',
+                    type: 'list',
+                    choices: arr,
+                    name: 'employee'
+                },
+                {
+                    message: 'Which role would you like to assign?',
+                    type: 'list',
+                    choices: a,
+                    name: 'newRole'
+                }
+            ])
+            await db.query(`UPDATE employee SET role_id = ${answer.newRole} WHERE id = ${answer.employee}`)
+            runSearch()
+        }
+}
+
+async function updateManager(){
+    const arr = []
+    const data = await db.query('SELECT * FROM employee')
+        data.map(({first_name,last_name,id}) =>
+            arr.push({name:`${first_name} ${last_name}`, value:id}))
+    const a = []
+    const d = await db.query('SELECT * FROM manager')
+        d.map(({manager, id}) => {
+            a.push({name:manager,value:id})
+        })   
+            const answer = await inquirer.prompt([
+                {
+                    message: 'Which employee would you like to update?',
+                    type: 'list',
+                    choices: arr,
+                    name: 'employee'
+                },
+                {
+                    message: 'To which manager will this employee be assigned?',
+                    type: 'list',
+                    choices: a,
+                    name: 'newManager'
+                }
+            ])
+            await db.query(`UPDATE employee SET manager_id = ${answer.newManager} WHERE id = ${answer.employee}`)
+            runSearch()
+}
+
+async function removeManager(){
+    const arr = []
+    const data = await db.query('SELECT * FROM manager')
+        data.map(({manager,id}) => {
+            arr.push({name:manager,value:id})
+        })
+        const answer = await inquirer.prompt([
+            {
+                message: 'Which manager would you like to remove?',
+                type: 'list',
+                choices: arr,
+                name: 'id'
+            }
+        ])
+        await db.query(`DELETE FROM manager WHERE id = '${answer.id}'`)
+        runSearch();
+}
+
+async function removeRole(){
+    const arr = []
+    const data = await db.query('SELECT * FROM role')
+        data.map(({title,id}) => {
+            arr.push({name:title,value:id})
         })
         const answer = await inquirer.prompt([
             {
                 message: 'Which role would you like to remove?',
                 type: 'list',
                 choices: arr,
-                name: 'name'
+                name: 'id'
             }
         ])
-        connection.query(`DELETE FROM role WHERE title = '${answer.name}'`)
-    })
+        await db.query(`DELETE FROM role WHERE id = '${answer.id}'`)
+        runSearch();
 }
 
-function removeDepartment(){
+async function removeDepartment(){
     const arr = []
-    connection.query('SELECT name FROM department', async (err, res) => {
-        res.forEach(({name}) => {
-            arr.push(name)
+    const data = await db.query('SELECT * FROM department')
+        data.map(({department,id}) => {
+            arr.push({name:department,value:id})
         })
         const answer = await inquirer.prompt([
             {
                 message: 'Which department would you like to remove?',
                 type: 'list',
                 choices: arr,
-                name: 'name'
+                name: 'id'
             }
         ])
-        connection.query(`DELETE FROM department WHERE name = '${answer.name}'`)
-    })
+        await db.query(`DELETE FROM department WHERE id = '${answer.id}'`)
+        await db.query(`DELETE FROM role WHERE department_id = '${answer.id}'`)
+        runSearch();
 }
 
 runSearch()
