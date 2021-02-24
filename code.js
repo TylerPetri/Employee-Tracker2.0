@@ -478,7 +478,7 @@ async function utilizedBudget(){
                 name: 'id'
             }
         ])
-        const d = await db.query(`SELECT role.salary FROM role WHERE role.department_id = ${answer.id}`)
+        const d = await db.query(`SELECT role.salary FROM role INNER JOIN employee ON role_id = role.id INNER JOIN department ON role.department_id = ${answer.id}`)
         if (d.length == 0){
             console.log(`\n\n[ERR] Requires an assigned list of roles and their salaries!\n\n`)
             runSearch()
