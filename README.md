@@ -35,7 +35,7 @@ You now have the node modules necessary to complete the code
 
 ## Usage
 
-[![Instructional video link](assets/youtubeLink.PNG)](https://www.youtube.com/watch?v=3GWKQ-hC3YA&feature=youtu.be)
+[![Instructional video link](assets/youtubeLink.PNG)](https://www.youtube.com/watch?v=VTN-o95zSMI&feature=youtu.be)
 
 
 ## Contributing
