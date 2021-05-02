@@ -33,7 +33,7 @@ Repeat `npm install mysql` `npm install console-tables`
 
 You now have the node modules necessary to complete the code
 
-## Usage
+## Usage (video link)
 
 [![Instructional video link](images/youtubeLink.PNG)](https://www.youtube.com/watch?v=VTN-o95zSMI&feature=youtu.be)
 
@@ -43,7 +43,10 @@ There were no automated tests during the process of this application.
 
 ## Built with
 
-Inquirer, MySQL, Console.Table, Nodejs
+* [Inquirer](https://www.npmjs.com/package/inquirer) - The user interface and the inquiry session flow provider
+* [MySQL](https://www.mysql.com/) - Database used
+* [Console.table](https://www.npmjs.com/package/console.table) - Added for user interface convenience
+* [Nodejs](https://nodejs.org/en/) - Used to launch the application
 
 ## License
 
@@ -58,4 +61,4 @@ There are many ways in which you can participate in the project, for example:
 
 ## Questions
 
-For any additional questions see my [GitHub profile](http://github.com/tylerpetri) or contact tylerpetri@hotmail.com
+For any additional questions see my [GitHub profile](http://github.com/tylerpetri) or contact tylerpetri93@gmail.com
