@@ -37,6 +37,17 @@ You now have the node modules necessary to complete the code
 
 [![Instructional video link](images/youtubeLink.PNG)](https://www.youtube.com/watch?v=VTN-o95zSMI&feature=youtu.be)
 
+## Running the tests
+
+There were no automated tests during the process of this application.
+
+## Built with
+
+Inquirer, MySQL, Console.Table, Nodejs
+
+## License
+
+This project is licensed under the MIT License
 
 ## Contributing
 
