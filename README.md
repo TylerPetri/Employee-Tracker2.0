@@ -59,6 +59,10 @@ There are many ways in which you can participate in the project, for example:
 * Review source code changes
 * Review the documentation and make pull requests for anything from typos to new content
 
+## Authors
+
+Sole author
+
 ## Questions
 
 For any additional questions see my [GitHub profile](http://github.com/tylerpetri) or contact tylerpetri93@gmail.com
